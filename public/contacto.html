@@ -3,28 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contacto - Genesys Messenger Route Demo</title>
+  <title>Contacto - Kranon CX</title>
   <meta name="description" content="Demostración estática de integración de Genesys Cloud Messenger - Ruta restringida.">
-  <!-- Google Fonts & Stylesheets -->
   <link rel="stylesheet" href="/css/styles.css">
-  <!--
-    Cargamos Genesys en todas las páginas para demostrar el control por ruta.
-    1. genesys-loader.js inicializa el SDK oficial con el deploymentId.
-    2. app.js contiene la lógica personalizada para mostrar u ocultar según la ruta activa.
+  <!-- 
+    Carga de Scripts Oficiales y Controladores.
+    Primero el loader asíncrono oficial de Genesys, seguido del controlador de enrutamiento de Kranon.
   -->
   <script src="/js/genesys-loader.js"></script>
   <script src="/js/app.js"></script>
 </head>
 <body>
 
+  <!-- Background Ambient Lights -->
+  <div class="ambient-orb orb-cyan"></div>
+  <div class="ambient-orb orb-blue"></div>
+
   <!-- Header Navigation -->
   <header>
     <div class="container header-container">
       <a href="/" class="logo" id="header-logo">
-        <div class="logo-dot"></div>
-        Genesys Route Control
+        <div class="logo-icon"></div>
+        KRANON <span>CX</span>
       </a>
-      <nav id="main-navigation">
+      <nav id="main-navigation" aria-label="Navegación principal">
         <a href="/" class="nav-link" id="nav-home">Inicio (/)</a>
         <a href="/nosotros" class="nav-link" id="nav-about">Nosotros (/nosotros)</a>
         <a href="/contacto" class="nav-link active" id="nav-contact">Contacto (/contacto)</a>
@@ -32,56 +34,82 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Main Content Layout -->
   <main class="container">
-    <div class="demo-grid">
+    <div class="layout-grid">
       
       <!-- Primary Demonstration Section -->
       <section class="card" id="demo-main-card">
-        <h1>Ruta: Contacto (/contacto)</h1>
-        <p class="page-description">
-          Esta es la página de Contacto. En esta ruta, el launcher de chat 
-          <strong>debe estar oculto</strong> de manera predeterminada para evitar la saturación del canal 
-          o enfocar al usuario en otros medios.
+        <span class="badge-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Módulo Demostrativo
+        </span>
+        <h1>Canales de Contacto <br><span class="hero-gradient">Área de Contacto (/contacto)</span></h1>
+        <p class="page-intro">
+          Esta es la sección de contacto de Kranon. Para evitar que el canal de chat de Genesys 
+          se superponga con otros formularios o flujos transaccionales clave del usuario en esta vista, 
+          el launcher <strong>permanece desactivado</strong> en esta ruta.
         </p>
 
-        <!-- Dynamic Status Display -->
-        <div id="status-container" class="status-blocked">
+        <!-- Dynamic Status Display (Blocked Route) -->
+        <div id="status-container" class="status-panel status-blocked">
           <div>
-            <h4>Estado del Messenger</h4>
-            <p style="margin: 4px 0 0 0; color: inherit; font-size: 0.9rem;">
-              Evaluación de ruta para: <span id="route-display" style="font-weight: 600;">/contacto</span>
-            </p>
+            <div class="status-label">Evaluación de Ruta</div>
+            <div class="status-route" id="route-display">/contacto</div>
           </div>
-          <span id="status-display" class="status-pill">Evaluando...</span>
+          <div class="pill-container">
+            <div class="status-dot-pulse"></div>
+            <span id="status-display">Oculto (No Permitido)</span>
+          </div>
         </div>
 
-        <div class="doc-section">
-          <h3>¿Qué sucede aquí?</h3>
-          <p>
-            El script de control <code class="inline">app.js</code> intercepta la inicialización de Genesys mediante la suscripción a 
-            <code class="inline">Messenger.ready</code>.
-          </p>
-          <ul class="feature-list">
-            <li>La ruta actual se detecta y normaliza como <code class="inline">/contacto</code>.</li>
-            <li>Se compara con la lista de rutas autorizadas: <code class="inline">["/"]</code>.</li>
-            <li>Al no coincidir, se ejecuta: <code class="inline">Genesys("command", "Launcher.hide", {});</code>.</li>
-            <li>El botón flotante (launcher) de Genesys se oculta automáticamente.</li>
-          </ul>
+        <!-- Technical Description Steps -->
+        <div class="tech-details">
+          <h3>Flujo de ejecución en esta ruta:</h3>
+          <ol class="step-list">
+            <li class="step-item">
+              <span class="step-num">1</span>
+              <div class="step-content">
+                <strong>Detección del Pathname</strong>
+                <p>El script <code class="inline-code">app.js</code> lee la propiedad de navegación del navegador e identifica la ruta como <code class="inline-code">/contacto</code>.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <span class="step-num">2</span>
+              <div class="step-content">
+                <strong>Comparación contra Lista de Permitidas</strong>
+                <p>El sistema verifica si la ruta coincide con las declaradas en el arreglo <code class="inline-code">ALLOWED_MESSENGER_PATHS</code> (que solo contiene la raíz <code class="inline-code">/</code>).</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <span class="step-num">3</span>
+              <div class="step-content">
+                <strong>Suscripción y Espera al SDK</strong>
+                <p>Al igual que en todas las páginas del sitio, se espera a que se dispare el evento <code class="inline-code">Messenger.ready</code> de Genesys para interactuar de forma segura con el SDK.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <span class="step-num">4</span>
+              <div class="step-content">
+                <strong>Ocultación del Launcher</strong>
+                <p>Al confirmarse que la ruta no está permitida para el canal de chat, se ejecuta el comando nativo <code class="inline-code">Genesys("command", "Launcher.hide", {})</code>, asegurando que el widget desaparezca.</p>
+              </div>
+            </li>
+          </ol>
         </div>
 
-        <!-- Virtual Console for Demonstration Logs -->
+        <!-- Virtual Console Console Monitor -->
         <div class="console-wrapper">
           <div class="console-header">
-            <div class="console-dots">
-              <span class="console-dot dot-red"></span>
-              <span class="console-dot dot-yellow"></span>
-              <span class="console-dot dot-green"></span>
+            <div class="console-controls">
+              <span class="console-btn close"></span>
+              <span class="console-btn minimize"></span>
+              <span class="console-btn maximize"></span>
             </div>
-            <div class="console-title">Registro de Eventos (Consola Virtual)</div>
+            <div class="console-title">Monitor de Eventos en Tiempo Real</div>
           </div>
           <div id="virtual-console" class="console-body">
-            <!-- Dynamic logs will be appended here by app.js -->
+            <!-- Logs automatically appended here by app.js -->
           </div>
         </div>
       </section>
@@ -89,47 +117,58 @@
       <!-- Technical Documentation Sidebar -->
       <aside class="sidebar">
         
-        <!-- Environment Variables info -->
-        <div class="card" id="env-card">
-          <h2>Configuración del Demo</h2>
-          <div class="doc-section">
-            <p><strong>Dominio de Prueba:</strong> <code class="inline">test-kranon.sky-nets.com.mx</code></p>
-            <p><strong>Deployment ID:</strong> <code class="inline">b6f9fa59-e9d1-4aaa-a352-194d2ca533bc</code></p>
-            <p><strong>Entorno:</strong> <code class="inline">prod</code></p>
-            <p><strong>Puerto Local:</strong> <code class="inline">18088</code></p>
+        <!-- System Parameters Info -->
+        <section class="sidebar-panel" id="config-panel">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+            Parámetros del Entorno
+          </h2>
+          <div class="meta-info-list">
+            <div class="meta-info-item">
+              <span class="meta-label">Dominio de Prueba</span>
+              <span class="meta-val accent-val">test-kranon.sky-nets.com.mx</span>
+            </div>
+            <div class="meta-info-item">
+              <span class="meta-label">Deployment ID</span>
+              <span class="meta-val">b6f9fa59-e9d1-4aaa-a352...</span>
+            </div>
+            <div class="meta-info-item">
+              <span class="meta-label">Entorno SDK</span>
+              <span class="meta-val">prod (mypurecloud)</span>
+            </div>
+            <div class="meta-info-item">
+              <span class="meta-label">Puerto de Servicio</span>
+              <span class="meta-val">18088</span>
+            </div>
           </div>
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
-            * Nota: El deployment ID se carga desde la configuración del cliente en Genesys Cloud. 
-            El dominio real debe estar en la lista de dominios autorizados dentro de Genesys Admin.
-          </p>
-        </div>
+        </section>
 
-        <!-- Best Practice Recommendation -->
-        <div class="card" id="best-practice-card">
-          <h2>Recomendación Clave</h2>
-          <div class="info-alert">
-            <h5>Configuración del Launcher</h5>
-            <p style="font-size: 0.9rem; margin: 0;">
-              En la consola de Genesys Cloud Messenger, configure:<br>
-              <strong>Launcher Visibility = "Hide until triggered by business logic"</strong>.
+        <!-- Best Practice Recommendation Panel -->
+        <section class="sidebar-panel" id="best-practices-panel">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Recomendación CX
+          </h2>
+          
+          <div class="callout-box">
+            <h5>Control de Parpadeo Visual (Flickering)</h5>
+            <p>
+              Para una transición fluida, configure la visibilidad del launcher en Genesys Cloud Messenger como:
+              <strong>"Hide until triggered by business logic"</strong>.
             </p>
           </div>
-          <p style="margin-top: 1rem; font-size: 0.9rem;">
-            Esto evita que el launcher nativo aparezca por defecto durante la carga de la página, eliminando el 
-            flickering o parpadeo visual en rutas restringidas como <em>/nosotros</em> o <em>/contacto</em>.
-          </p>
           
-          <h3 style="margin-top: 1.5rem;">Lógica Principal Utilizada</h3>
-          <div class="code-snippet">
-window.Genesys("subscribe", "Messenger.ready", () => {
-  if (shouldShow) {
-    window.Genesys("command", "Launcher.show", {});
-  } else {
-    window.Genesys("command", "Launcher.hide", {});
-  }
-});
+          <p style="margin-top: 1.25rem; font-size: 0.85rem; color: #64748b;">
+            Esta directiva le indica al widget que permanezca invisible hasta que la lógica de la página ordene mostrarlo explícitamente, evitando que el chat parpadee en rutas restringidas como <em>/nosotros</em> o <em>/contacto</em>.
+          </p>
+
+          <div class="code-panel">
+            <pre><code>Genesys("subscribe", "Messenger.ready", () => {
+  // Aplicar regla de ruta
+  Genesys("command", "Launcher.show", {});
+});</code></pre>
           </div>
-        </div>
+        </section>
 
       </aside>
 
@@ -138,11 +177,15 @@ window.Genesys("subscribe", "Messenger.ready", () => {
 
   <!-- Footer -->
   <footer>
-    <div class="container">
-      <p>Genesys Cloud Messenger Integration Mockup - Demo Control de Rutas</p>
-      <p style="font-size: 0.8rem; margin-top: 5px; color: rgba(255,255,255,0.3);">
-        Diseñado bajo estándares de despliegue para PromotoraKranon.
-      </p>
+    <div class="container footer-content">
+      <div class="footer-left">
+        <div class="footer-logo">KRANON <span>CX</span></div>
+        <p style="margin: 0;">| Laboratorio de Innovación de Canales Digitales</p>
+      </div>
+      <div class="footer-right">
+        <p>&copy; 2026 Kranon. Todos los derechos reservados.</p>
+        <p style="font-size: 0.75rem; color: #475569;">Demostración de Enrutamiento Seguro en Genesys Cloud.</p>
+      </div>
     </div>
   </footer>
 
