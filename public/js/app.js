@@ -56,6 +56,27 @@
     return ALLOWED_MESSENGER_PATHS.includes(currentPath);
   }
 
+  // ==============================================================================
+  // CONTROL DE ENCOLADO INMEDIATO (Prevención de Renderizado en Recargas / Sesión Activa)
+  // ==============================================================================
+  // Este bloque se ejecuta de manera síncrona al cargar el archivo JS.
+  // Pasa los comandos a Genesys.q ANTES de que el SDK de Genesys termine de descargarse.
+  // De esta manera, el widget se inicializa ya configurado para ocultarse, evitando
+  // el parpadeo visual o renderizado involuntario en recargas de página (/nosotros).
+  // ==============================================================================
+  const currentPathSync = normalizePath(window.location.pathname);
+  const isAllowedSync = shouldShowMessenger();
+
+  if (window.Genesys) {
+    if (isAllowedSync) {
+      window.Genesys("command", "Launcher.show", {});
+    } else {
+      // Hacemos un hide del launcher y un close del chat activo para bloquear la sesión persistente
+      window.Genesys("command", "Launcher.hide", {});
+      window.Genesys("command", "Messenger.close", {});
+    }
+  }
+
   /**
    * Registra los mensajes en la consola del navegador y los escribe 
    * en la consola virtual de la interfaz gráfica si existe en la pantalla.
@@ -133,12 +154,11 @@
 
     if (allowed) {
       logMessage("info", `Ruta "${currentPath}" permitida. Ejecutando Launcher.show...`);
-      // Comando para mostrar el launcher oficial de Genesys
       window.Genesys("command", "Launcher.show", {});
     } else {
-      logMessage("info", `Ruta "${currentPath}" NO permitida. Ejecutando Launcher.hide...`);
-      // Comando para ocultar el launcher oficial de Genesys
+      logMessage("info", `Ruta "${currentPath}" NO permitida. Asegurando Launcher.hide y Messenger.close...`);
       window.Genesys("command", "Launcher.hide", {});
+      window.Genesys("command", "Messenger.close", {});
     }
   }
 
@@ -155,6 +175,13 @@
     if (!window.Genesys) {
       logMessage("warn", "No se encontró el objeto global window.Genesys. Asegúrese de que genesys-loader.js cargó correctamente.");
       return;
+    }
+
+    // Reportamos las acciones preventivas tomadas al cargar
+    if (!allowed) {
+      logMessage("info", `Medida Preventiva: Encolado síncrono de Launcher.hide y Messenger.close aplicado.`);
+    } else {
+      logMessage("info", `Medida Preventiva: Encolado síncrono de Launcher.show aplicado.`);
     }
 
     /**
