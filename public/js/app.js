@@ -56,25 +56,40 @@
     return ALLOWED_MESSENGER_PATHS.includes(currentPath);
   }
 
+  /**
+   * Utilidades para consultar y guardar el estado del Launcher en sessionStorage.
+   * Esto nos permite persistir la información de si el launcher fue mostrado 
+   * a lo largo de la navegación en la pestaña activa.
+   */
+  function wasLauncherShownInSession() {
+    return sessionStorage.getItem("genesys_launcher_shown") === "true";
+  }
+
+  function setLauncherSessionState(shown) {
+    sessionStorage.setItem("genesys_launcher_shown", shown ? "true" : "false");
+  }
+
   // ==============================================================================
-  // CONTROL DE ENCOLADO INMEDIATO (Prevención de Renderizado en Recargas / Sesión Activa)
+  // CONTROL DE ENCOLADO INMEDIATO ESTADO (sessionStorage)
   // ==============================================================================
-  // Este bloque se ejecuta de manera síncrona al cargar el archivo JS.
-  // Pasa los comandos a Genesys.q ANTES de que el SDK de Genesys termine de descargarse.
-  // De esta manera, el widget se inicializa ya configurado para ocultarse, evitando
-  // el parpadeo visual o renderizado involuntario en recargas de página (/nosotros).
+  // Este bloque de control se ejecuta síncronamente al cargar el script.
+  // Evita llamadas innecesarias a Launcher.hide si el usuario entra directo a /nosotros.
   // ==============================================================================
   const currentPathSync = normalizePath(window.location.pathname);
   const isAllowedSync = shouldShowMessenger();
+  const wasShownSync = wasLauncherShownInSession();
 
   if (window.Genesys) {
     if (isAllowedSync) {
       window.Genesys("command", "Launcher.show", {});
-    } else {
-      // Hacemos un hide del launcher y un close del chat activo para bloquear la sesión persistente
+      setLauncherSessionState(true);
+    } else if (wasShownSync) {
+      // Solo encolamos ocultamiento si estuvo visible previamente en la sesión
       window.Genesys("command", "Launcher.hide", {});
       window.Genesys("command", "Messenger.close", {});
+      setLauncherSessionState(false);
     }
+    // Si no está permitido y no estuvo visible, no hacemos nada (evita errores del SDK)
   }
 
   /**
@@ -117,7 +132,7 @@
   /**
    * Actualiza el panel informativo de la maqueta con el estado de la ruta y visibilidad.
    */
-  function updateVisualStatus(path, allowed) {
+  function updateVisualStatus(path, allowed, wasShown) {
     const routeDisplay = document.getElementById("route-display");
     const statusDisplay = document.getElementById("status-display");
     const statusContainer = document.getElementById("status-container");
@@ -127,9 +142,13 @@
     }
 
     if (statusDisplay) {
-      statusDisplay.textContent = allowed 
-        ? "Habilitado (Visible)" 
-        : "Oculto (No Permitido)";
+      if (allowed) {
+        statusDisplay.textContent = "Habilitado (Visible)";
+      } else if (wasShown) {
+        statusDisplay.textContent = "Oculto (Acción Launcher.hide)";
+      } else {
+        statusDisplay.textContent = "Oculto (Directo - Sin Comando)";
+      }
     }
 
     if (statusContainer) {
@@ -143,9 +162,10 @@
   function applyGenesysMessengerVisibility() {
     const currentPath = normalizePath(window.location.pathname);
     const allowed = shouldShowMessenger();
+    const wasShown = wasLauncherShownInSession();
 
     // Actualizar estado en pantalla
-    updateVisualStatus(currentPath, allowed);
+    updateVisualStatus(currentPath, allowed, wasShown);
 
     if (!window.Genesys) {
       logMessage("warn", "Genesys SDK no está disponible para ejecutar comandos.");
@@ -155,10 +175,14 @@
     if (allowed) {
       logMessage("info", `Ruta "${currentPath}" permitida. Ejecutando Launcher.show...`);
       window.Genesys("command", "Launcher.show", {});
-    } else {
-      logMessage("info", `Ruta "${currentPath}" NO permitida. Asegurando Launcher.hide y Messenger.close...`);
+      setLauncherSessionState(true);
+    } else if (wasShown) {
+      logMessage("info", `Ruta "${currentPath}" NO permitida y launcher visible previamente. Ejecutando Launcher.hide y Messenger.close...`);
       window.Genesys("command", "Launcher.hide", {});
       window.Genesys("command", "Messenger.close", {});
+      setLauncherSessionState(false);
+    } else {
+      logMessage("info", `Ruta "${currentPath}" NO permitida. Acceso directo: omitiendo comandos para evitar fallas del SDK.`);
     }
   }
 
@@ -170,7 +194,9 @@
     
     const currentPath = normalizePath(window.location.pathname);
     const allowed = shouldShowMessenger();
-    updateVisualStatus(currentPath, allowed);
+    const wasShown = wasLauncherShownInSession();
+    
+    updateVisualStatus(currentPath, allowed, wasShown);
 
     if (!window.Genesys) {
       logMessage("warn", "No se encontró el objeto global window.Genesys. Asegúrese de que genesys-loader.js cargó correctamente.");
@@ -178,10 +204,12 @@
     }
 
     // Reportamos las acciones preventivas tomadas al cargar
-    if (!allowed) {
-      logMessage("info", `Medida Preventiva: Encolado síncrono de Launcher.hide y Messenger.close aplicado.`);
-    } else {
+    if (allowed) {
       logMessage("info", `Medida Preventiva: Encolado síncrono de Launcher.show aplicado.`);
+    } else if (wasShown) {
+      logMessage("info", `Medida Preventiva: Encolado síncrono de Launcher.hide y Messenger.close aplicado (Usuario venía de Inicio).`);
+    } else {
+      logMessage("info", `Medida Preventiva: Ninguna acción requerida (Usuario ingresó directo a ruta restringida).`);
     }
 
     /**
@@ -194,7 +222,7 @@
       applyGenesysMessengerVisibility();
     });
 
-    logMessage("info", `Monitoreo listo. Ruta actual normalizada: "${currentPath}" (Permitida: ${allowed})`);
+    logMessage("info", `Monitoreo listo. Ruta actual normalizada: "${currentPath}" (Permitida: ${allowed}, Visible Previo: ${wasShown})`);
   }
 
   // Ejecutar cuando el DOM esté listo
