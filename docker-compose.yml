@@ -8,7 +8,6 @@ services:
       dockerfile: Dockerfile
     container_name: genesys-messenger-route-demo
     restart: unless-stopped
-    # Exponemos el puerto 80 únicamente a la red interna de Docker
     expose:
       - "80"
     mem_limit: 128m
@@ -19,10 +18,15 @@ services:
     image: caddy:alpine
     container_name: caddy-ssl-proxy
     restart: unless-stopped
-    # Mapeamos los puertos públicos estándar para HTTP y HTTPS
     ports:
       - "80:80"
       - "443:443"
+    # IMPORTANTE: Configuramos servidores DNS públicos en el contenedor.
+    # Esto evita el error de resolución ("connection refused" en 127.0.0.53)
+    # causado por el resolvedor local systemd-resolved de Ubuntu.
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
@@ -30,7 +34,6 @@ services:
     depends_on:
       - genesys-messenger-route-demo
 
-# Volúmenes persistentes para almacenar certificados SSL y configuraciones de Caddy
 volumes:
   caddy_data:
   caddy_config:
