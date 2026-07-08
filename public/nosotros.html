@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nosotros - Genesys Messenger Route Demo</title>
+  <meta name="description" content="Demostración estática de integración de Genesys Cloud Messenger - Ruta restringida.">
+  <!-- Google Fonts & Stylesheets -->
+  <link rel="stylesheet" href="/css/styles.css">
+  <!--
+    Cargamos Genesys en todas las páginas para demostrar el control por ruta.
+    1. genesys-loader.js inicializa el SDK oficial con el deploymentId.
+    2. app.js contiene la lógica personalizada para mostrar u ocultar según la ruta activa.
+  -->
+  <script src="/js/genesys-loader.js"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="container header-container">
+      <a href="/" class="logo" id="header-logo">
+        <div class="logo-dot"></div>
+        Genesys Route Control
+      </a>
+      <nav id="main-navigation">
+        <a href="/" class="nav-link" id="nav-home">Inicio (/)</a>
+        <a href="/nosotros" class="nav-link active" id="nav-about">Nosotros (/nosotros)</a>
+        <a href="/contacto" class="nav-link" id="nav-contact">Contacto (/contacto)</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="demo-grid">
+      
+      <!-- Primary Demonstration Section -->
+      <section class="card" id="demo-main-card">
+        <h1>Ruta: Nosotros (/nosotros)</h1>
+        <p class="page-description">
+          Esta es la página de información institucional (Nosotros). En esta ruta, el launcher de chat 
+          <strong>debe estar oculto</strong> para no interrumpir la navegación del usuario.
+        </p>
+
+        <!-- Dynamic Status Display -->
+        <div id="status-container" class="status-blocked">
+          <div>
+            <h4>Estado del Messenger</h4>
+            <p style="margin: 4px 0 0 0; color: inherit; font-size: 0.9rem;">
+              Evaluación de ruta para: <span id="route-display" style="font-weight: 600;">/nosotros</span>
+            </p>
+          </div>
+          <span id="status-display" class="status-pill">Evaluando...</span>
+        </div>
+
+        <div class="doc-section">
+          <h3>¿Qué sucede aquí?</h3>
+          <p>
+            El script de control <code class="inline">app.js</code> intercepta la inicialización de Genesys mediante la suscripción a 
+            <code class="inline">Messenger.ready</code>.
+          </p>
+          <ul class="feature-list">
+            <li>La ruta actual se detecta y normaliza como <code class="inline">/nosotros</code>.</li>
+            <li>Se compara con la lista de rutas autorizadas: <code class="inline">["/"]</code>.</li>
+            <li>Al no encontrarse en las permitidas, se ejecuta: <code class="inline">Genesys("command", "Launcher.hide", {});</code>.</li>
+            <li>El botón flotante (launcher) de Genesys se oculta automáticamente.</li>
+          </ul>
+        </div>
+
+        <!-- Virtual Console for Demonstration Logs -->
+        <div class="console-wrapper">
+          <div class="console-header">
+            <div class="console-dots">
+              <span class="console-dot dot-red"></span>
+              <span class="console-dot dot-yellow"></span>
+              <span class="console-dot dot-green"></span>
+            </div>
+            <div class="console-title">Registro de Eventos (Consola Virtual)</div>
+          </div>
+          <div id="virtual-console" class="console-body">
+            <!-- Dynamic logs will be appended here by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Technical Documentation Sidebar -->
+      <aside class="sidebar">
+        
+        <!-- Environment Variables info -->
+        <div class="card" id="env-card">
+          <h2>Configuración del Demo</h2>
+          <div class="doc-section">
+            <p><strong>Dominio de Prueba:</strong> <code class="inline">test-kranon.sky-nets.com.mx</code></p>
+            <p><strong>Deployment ID:</strong> <code class="inline">b6f9fa59-e9d1-4aaa-a352-194d2ca533bc</code></p>
+            <p><strong>Entorno:</strong> <code class="inline">prod</code></p>
+            <p><strong>Puerto Local:</strong> <code class="inline">18088</code></p>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            * Nota: El deployment ID se carga desde la configuración del cliente en Genesys Cloud. 
+            El dominio real debe estar en la lista de dominios autorizados dentro de Genesys Admin.
+          </p>
+        </div>
+
+        <!-- Best Practice Recommendation -->
+        <div class="card" id="best-practice-card">
+          <h2>Recomendación Clave</h2>
+          <div class="info-alert">
+            <h5>Configuración del Launcher</h5>
+            <p style="font-size: 0.9rem; margin: 0;">
+              En la consola de Genesys Cloud Messenger, configure:<br>
+              <strong>Launcher Visibility = "Hide until triggered by business logic"</strong>.
+            </p>
+          </div>
+          <p style="margin-top: 1rem; font-size: 0.9rem;">
+            Esto evita que el launcher nativo aparezca por defecto durante la carga de la página, eliminando el 
+            flickering o parpadeo visual en rutas restringidas como <em>/nosotros</em> o <em>/contacto</em>.
+          </p>
+          
+          <h3 style="margin-top: 1.5rem;">Lógica Principal Utilizada</h3>
+          <div class="code-snippet">
+window.Genesys("subscribe", "Messenger.ready", () => {
+  if (shouldShow) {
+    window.Genesys("command", "Launcher.show", {});
+  } else {
+    window.Genesys("command", "Launcher.hide", {});
+  }
+});
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>Genesys Cloud Messenger Integration Mockup - Demo Control de Rutas</p>
+      <p style="font-size: 0.8rem; margin-top: 5px; color: rgba(255,255,255,0.3);">
+        Diseñado bajo estándares de despliegue para PromotoraKranon.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
