@@ -1,19 +1,36 @@
 name: genesys-messenger-route-demo
 
 services:
+  # 1. Maqueta Web Estática (Servidor Nginx interno)
   genesys-messenger-route-demo:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: genesys-messenger-route-demo
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:18088:80"
+    # Exponemos el puerto 80 únicamente a la red interna de Docker
+    expose:
+      - "80"
     mem_limit: 128m
     cpus: "0.25"
 
-# If this mockup needs to communicate with internal backends in the future,
-# you can uncomment the network settings below to hook into the proxy network.
-# networks:
-#   internal_services_net:
-#     external: true
+  # 2. Proxy Inverso con SSL Automático (Caddy)
+  caddy:
+    image: caddy:alpine
+    container_name: caddy-ssl-proxy
+    restart: unless-stopped
+    # Mapeamos los puertos públicos estándar para HTTP y HTTPS
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - genesys-messenger-route-demo
+
+# Volúmenes persistentes para almacenar certificados SSL y configuraciones de Caddy
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,8 @@
+# ==============================================================================
+# Caddyfile - Automatic SSL Proxy for Genesys Route Control Demo
+# ==============================================================================
+
+test-kranon.sky-nets.com.mx {
+    # Redirige todo el tráfico entrante de este dominio al contenedor de Nginx
+    reverse_proxy genesys-messenger-route-demo:80
+}
