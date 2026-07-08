@@ -3,113 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kranon CX - Genesys Messenger Demo</title>
+  <title>Kranon CX - Control de Messenger por Ruta</title>
   <meta name="description" content="Demostración estática de integración de Genesys Cloud Messenger y control de visibilidad por ruta.">
   <link rel="stylesheet" href="/css/styles.css">
-  <!-- 
-    Carga de Scripts Oficiales y Controladores.
-    Primero el loader asíncrono oficial de Genesys, seguido del controlador de enrutamiento de Kranon.
-  -->
+  <!-- Carga del SDK oficial y el controlador local -->
   <script src="/js/genesys-loader.js"></script>
   <script src="/js/app.js"></script>
 </head>
 <body>
 
-  <!-- Background Ambient Lights -->
-  <div class="ambient-orb orb-cyan"></div>
-  <div class="ambient-orb orb-blue"></div>
-
-  <!-- Header Navigation -->
+  <!-- Header & Navigation -->
   <header>
     <div class="container header-container">
       <a href="/" class="logo" id="header-logo">
-        <div class="logo-icon"></div>
-        KRANON <span>CX</span>
+        KRANON
+        <span>Laboratorio CX</span>
       </a>
       <nav id="main-navigation" aria-label="Navegación principal">
-        <a href="/" class="nav-link active" id="nav-home">Inicio (/)</a>
-        <a href="/nosotros" class="nav-link" id="nav-about">Nosotros (/nosotros)</a>
-        <a href="/contacto" class="nav-link" id="nav-contact">Contacto (/contacto)</a>
+        <a href="/" class="nav-link active" id="nav-home">Inicio</a>
+        <a href="/nosotros" class="nav-link" id="nav-about">Nosotros</a>
+        <a href="/contacto" class="nav-link" id="nav-contact">Contacto</a>
       </nav>
     </div>
   </header>
 
-  <!-- Main Content Layout -->
+  <!-- Main Grid Content -->
   <main class="container">
     <div class="layout-grid">
       
       <!-- Primary Demonstration Section -->
       <section class="card" id="demo-main-card">
-        <span class="badge-tag">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          Módulo Demostrativo
-        </span>
-        <h1>Control de Enrutamiento <br><span class="hero-gradient">Genesys Messenger</span></h1>
-        <p class="page-intro">
-          Bienvenido al laboratorio de integración CX de Kranon. Esta maqueta demuestra cómo administrar 
-          la visibilidad del widget de chat de Genesys dinámicamente según la ruta del usuario, permitiendo 
-          mantener una navegación limpia y dirigida.
+        <h1>Control de Visibilidad <br><em>por Ruta de Navegación</em></h1>
+        <p class="page-description">
+          Esta maqueta demuestra cómo administrar el widget de chat de Genesys Cloud dinámicamente según la sección activa. 
+          En esta página principal (Inicio), el botón de chat debe estar visible para el usuario.
         </p>
 
-        <!-- Dynamic Status Display (Allowed Route) -->
-        <div id="status-container" class="status-panel status-allowed">
-          <div>
-            <div class="status-label">Evaluación de Ruta</div>
-            <div class="status-route" id="route-display">/</div>
-          </div>
-          <div class="pill-container">
-            <div class="status-dot-pulse"></div>
-            <span id="status-display">Habilitado (Visible)</span>
-          </div>
+        <!-- Status Banner -->
+        <div id="status-container" class="status-banner">
+          <div class="status-label">Evaluación de Ruta</div>
+          <div class="status-value" id="route-display">/</div>
+          <span id="status-display">Evaluando estado...</span>
         </div>
 
         <!-- Technical Description Steps -->
-        <div class="tech-details">
-          <h3>Flujo de ejecución en esta ruta:</h3>
+        <div class="details-section">
+          <h3>Comportamiento en esta ruta</h3>
           <ol class="step-list">
             <li class="step-item">
-              <span class="step-num">1</span>
-              <div class="step-content">
-                <strong>Detección del Pathname</strong>
-                <p>El script <code class="inline-code">app.js</code> intercepta la carga de la página e identifica la ruta actual como <code class="inline-code">/</code>.</p>
+              <span class="step-marker">I.</span>
+              <div class="step-text">
+                <strong>Detección de Ruta</strong>
+                <p>El script <code class="inline-code">app.js</code> identifica que el usuario se encuentra en la raíz del sitio web (<code class="inline-code">/</code>).</p>
               </div>
             </li>
             <li class="step-item">
-              <span class="step-num">2</span>
-              <div class="step-content">
-                <strong>Comparación contra Lista de Permitidas</strong>
-                <p>Se evalúa si la ruta está incluida en el arreglo <code class="inline-code">ALLOWED_MESSENGER_PATHS</code>, el cual contiene únicamente la raíz.</p>
+              <span class="step-marker">II.</span>
+              <div class="step-text">
+                <strong>Comando de Activación</strong>
+                <p>Dado que es una ruta permitida, el controlador encola y ejecuta el comando nativo <code class="inline-code">Genesys("command", "Launcher.show", {})</code>.</p>
               </div>
             </li>
             <li class="step-item">
-              <span class="step-num">3</span>
-              <div class="step-content">
-                <strong>Suscripción y Espera al SDK</strong>
-                <p>El código se suscribe al callback de <code class="inline-code">Messenger.ready</code> provisto por el SDK oficial de Genesys.</p>
-              </div>
-            </li>
-            <li class="step-item">
-              <span class="step-num">4</span>
-              <div class="step-content">
-                <strong>Apertura del Launcher</strong>
-                <p>Al completarse la carga y confirmarse que la ruta está permitida, se ejecuta el comando nativo <code class="inline-code">Genesys("command", "Launcher.show", {})</code>.</p>
+              <span class="step-marker">III.</span>
+              <div class="step-text">
+                <strong>Registro de Estado de Sesión</strong>
+                <p>Marcamos en <code class="inline-code">sessionStorage</code> que el widget ha sido mostrado. Esto evitará llamadas innecesarias al cambiar de sección.</p>
               </div>
             </li>
           </ol>
         </div>
 
-        <!-- Virtual Console Console Monitor -->
-        <div class="console-wrapper">
-          <div class="console-header">
-            <div class="console-controls">
-              <span class="console-btn close"></span>
-              <span class="console-btn minimize"></span>
-              <span class="console-btn maximize"></span>
-            </div>
-            <div class="console-title">Monitor de Eventos en Tiempo Real</div>
-          </div>
-          <div id="virtual-console" class="console-body">
-            <!-- Logs automatically appended here by app.js -->
+        <!-- Clean Event Log (Bitácora de Sesión) -->
+        <div class="log-wrapper">
+          <div class="log-title">Bitácora de Eventos (Telemetría de la sesión)</div>
+          <div id="virtual-console" class="log-container">
+            <!-- Append log entries here dynamically -->
           </div>
         </div>
       </section>
@@ -117,55 +86,50 @@
       <!-- Technical Documentation Sidebar -->
       <aside class="sidebar">
         
-        <!-- System Parameters Info -->
+        <!-- Parameter Details Panel -->
         <section class="sidebar-panel" id="config-panel">
-          <h2>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-            Parámetros del Entorno
-          </h2>
-          <div class="meta-info-list">
-            <div class="meta-info-item">
-              <span class="meta-label">Dominio de Prueba</span>
-              <span class="meta-val accent-val">test-kranon.sky-nets.com.mx</span>
+          <h2>Parámetros del Demo</h2>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">Dominio de Prueba</span>
+              <span class="info-value">test-kranon.sky-nets.com.mx</span>
             </div>
-            <div class="meta-info-item">
-              <span class="meta-label">Deployment ID</span>
-              <span class="meta-val">b6f9fa59-e9d1-4aaa-a352...</span>
+            <div class="info-row">
+              <span class="info-label">Deployment ID</span>
+              <span class="info-value">b6f9fa59-e9d1-4aaa-a352...</span>
             </div>
-            <div class="meta-info-item">
-              <span class="meta-label">Entorno SDK</span>
-              <span class="meta-val">prod (mypurecloud)</span>
+            <div class="info-row">
+              <span class="info-label">Entorno</span>
+              <span class="info-value">prod (mypurecloud)</span>
             </div>
-            <div class="meta-info-item">
-              <span class="meta-label">Puerto de Servicio</span>
-              <span class="meta-val">18088</span>
+            <div class="info-row">
+              <span class="info-label">Puerto de Servicio</span>
+              <span class="info-value">18088</span>
             </div>
           </div>
         </section>
 
-        <!-- Best Practice Recommendation Panel -->
+        <!-- Best Practices Panel -->
         <section class="sidebar-panel" id="best-practices-panel">
-          <h2>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            Recomendación CX
-          </h2>
+          <h2>Ajustes Recomendados</h2>
           
-          <div class="callout-box">
-            <h5>Control de Parpadeo Visual (Flickering)</h5>
+          <div class="quote-panel">
+            <h5>Control de parpadeo visual (Flicker)</h5>
             <p>
-              Para una transición fluida, configure la visibilidad del launcher en Genesys Cloud Messenger como:
+              En la consola de administración de Genesys Cloud, configure la visibilidad del launcher en:
               <strong>"Hide until triggered by business logic"</strong>.
             </p>
           </div>
           
-          <p style="margin-top: 1.25rem; font-size: 0.85rem; color: #64748b;">
-            Esta directiva le indica al widget que permanezca invisible hasta que la lógica de la página ordene mostrarlo explícitamente, evitando que el chat parpadee en rutas restringidas como <em>/nosotros</em> o <em>/contacto</em>.
+          <p style="margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+            Esta directiva le indica al widget que permanezca invisible hasta que nuestro código ordene mostrarlo explícitamente, evitando que el chat parpadee en rutas restringidas.
           </p>
 
-          <div class="code-panel">
+          <div class="code-box">
             <pre><code>Genesys("subscribe", "Messenger.ready", () => {
-  // Aplicar regla de ruta
-  Genesys("command", "Launcher.show", {});
+  if (shouldShow) {
+    Genesys("command", "Launcher.show", {});
+  }
 });</code></pre>
           </div>
         </section>
@@ -177,14 +141,12 @@
 
   <!-- Footer -->
   <footer>
-    <div class="container footer-content">
-      <div class="footer-left">
-        <div class="footer-logo">KRANON <span>CX</span></div>
-        <p style="margin: 0;">| Laboratorio de Innovación de Canales Digitales</p>
+    <div class="container footer-container">
+      <div>
+        <p><strong>KRANON</strong> | CX Labs</p>
       </div>
-      <div class="footer-right">
-        <p>&copy; 2026 Kranon. Todos los derechos reservados.</p>
-        <p style="font-size: 0.75rem; color: #475569;">Demostración de Enrutamiento Seguro en Genesys Cloud.</p>
+      <div>
+        <p>&copy; 2026 Kranon. Control de enrutamiento Genesys Cloud Messenger.</p>
       </div>
     </div>
   </footer>
